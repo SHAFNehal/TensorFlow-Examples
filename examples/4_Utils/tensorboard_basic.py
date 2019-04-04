@@ -19,8 +19,8 @@ mnist = input_data.read_data_sets("/tmp/data/", one_hot=True)
 learning_rate = 0.01
 training_epochs = 25
 batch_size = 100
-display_step = 1
-logs_path = '/tmp/tensorflow_logs/example'
+display_epoch = 1
+logs_path = '/tmp/tensorflow_logs/example/'
 
 # tf Graph Input
 # mnist data image of shape 28*28=784
@@ -48,22 +48,24 @@ with tf.name_scope('Accuracy'):
     acc = tf.equal(tf.argmax(pred, 1), tf.argmax(y, 1))
     acc = tf.reduce_mean(tf.cast(acc, tf.float32))
 
-# Initializing the variables
-init = tf.initialize_all_variables()
+# Initialize the variables (i.e. assign their default value)
+init = tf.global_variables_initializer()
 
 # Create a summary to monitor cost tensor
-tf.scalar_summary("loss", cost)
+tf.summary.scalar("loss", cost)
 # Create a summary to monitor accuracy tensor
-tf.scalar_summary("accuracy", acc)
+tf.summary.scalar("accuracy", acc)
 # Merge all summaries into a single op
-merged_summary_op = tf.merge_all_summaries()
+merged_summary_op = tf.summary.merge_all()
 
-# Launch the graph
+# Start training
 with tf.Session() as sess:
+
+    # Run the initializer
     sess.run(init)
 
     # op to write logs to Tensorboard
-    summary_writer = tf.train.SummaryWriter(logs_path, graph=tf.get_default_graph())
+    summary_writer = tf.summary.FileWriter(logs_path, graph=tf.get_default_graph())
 
     # Training cycle
     for epoch in range(training_epochs):
@@ -81,7 +83,7 @@ with tf.Session() as sess:
             # Compute average loss
             avg_cost += c / total_batch
         # Display logs per epoch step
-        if (epoch+1) % display_step == 0:
+        if (epoch+1) % display_epoch == 0:
             print("Epoch:", '%04d' % (epoch+1), "cost=", "{:.9f}".format(avg_cost))
 
     print("Optimization Finished!")
